@@ -70,15 +70,28 @@ npm run build
 npm run preview
 ```
 
-## 🤖 Supported LLM Models
+## 🤖 Supported LLM Models (WebLLM)
 
-| Model | Size | Notes |
-|-------|------|-------|
-| Qwen2.5 0.5B | ~400MB | **Fastest** - Great for quick responses |
-| Qwen2.5 1.5B | ~1GB | Good balance of speed and quality |
-| Llama 3.2 1B | ~700MB | Meta's latest small model |
-| SmolLM2 360M | ~250MB | Tiny model for basic tasks |
-| TinyLlama 1.1B | ~700MB | Compact and efficient |
+All LLM models are powered by [WebLLM](https://github.com/mlc-ai/web-llm), which runs large language models directly in the browser using WebGPU acceleration. Models are compiled to run efficiently on the GPU using [MLC LLM](https://llm.mlc.ai/).
+
+| Model | Model ID | Size | Notes |
+|-------|----------|------|-------|
+| Qwen2.5 0.5B | `Qwen2.5-0.5B-Instruct-q4f32_1-MLC` | ~400MB | **Fastest** - Great for quick responses |
+| Qwen2.5 1.5B | `Qwen2.5-1.5B-Instruct-q4f32_1-MLC` | ~1GB | Good balance of speed and quality |
+| Llama 3.2 1B | `Llama-3.2-1B-Instruct-q4f32_1-MLC` | ~700MB | Meta's latest small model |
+| SmolLM2 360M | `SmolLM2-360M-Instruct-q4f32_1-MLC` | ~250MB | Tiny model for basic tasks |
+| TinyLlama 1.1B | `TinyLlama-1.1B-Chat-v1.0-q4f32_1-MLC` | ~700MB | Compact and efficient |
+
+### Model Quantization
+
+All models use `q4f32_1` quantization:
+- **q4**: 4-bit weight quantization (reduces model size)
+- **f32**: 32-bit floating-point activations
+- **MLC**: Compiled with MLC LLM for WebGPU
+
+### Adding More Models
+
+You can add any model from the [WebLLM Model List](https://github.com/mlc-ai/web-llm/blob/main/src/config.ts). Simply add the model ID to the dropdown in `index.html`.
 
 ## 🔧 How It Works
 
@@ -136,8 +149,33 @@ google-chrome --enable-unsafe-webgpu --use-angle=gl http://localhost:5173
 
 ## 📦 Dependencies
 
-- [@mlc-ai/web-llm](https://github.com/mlc-ai/web-llm) — WebGPU-accelerated LLM inference
-- [@xenova/transformers](https://github.com/xenova/transformers.js) — ONNX-based embeddings in the browser
+### Core AI Libraries
+
+| Package | Purpose | Runtime |
+|---------|---------|--------|
+| [@mlc-ai/web-llm](https://github.com/mlc-ai/web-llm) | LLM inference (text generation, Q&A) | WebGPU |
+| [@huggingface/transformers](https://github.com/huggingface/transformers.js) | Text embeddings for RAG | WASM/WebGPU |
+
+### WebLLM Details
+
+WebLLM enables running large language models natively in the browser:
+- **WebGPU Backend**: Utilizes GPU for fast inference
+- **Model Caching**: Models are cached in browser storage after first download
+- **OpenAI-Compatible API**: Uses familiar chat completions API
+- **No Server Required**: All computation happens client-side
+
+```javascript
+// Example WebLLM usage in this project
+import * as webllm from '@mlc-ai/web-llm';
+
+const engine = await webllm.CreateMLCEngine("Qwen2.5-0.5B-Instruct-q4f32_1-MLC");
+const response = await engine.chat.completions.create({
+  messages: [{ role: "user", content: "Hello!" }]
+});
+```
+
+### Build Tools
+
 - [Vite](https://vitejs.dev/) — Fast build tool and dev server
 
 ## 🗂️ Project Structure
@@ -178,10 +216,22 @@ MIT License — feel free to use this project for any purpose.
 
 ## 🙏 Acknowledgments
 
-- [MLC AI](https://mlc.ai/) for the amazing WebLLM library
-- [Xenova](https://github.com/xenova) for Transformers.js
-- Model creators: Qwen, Meta, Hugging Face
+- [MLC AI](https://mlc.ai/) for the amazing [WebLLM](https://github.com/mlc-ai/web-llm) library
+- [Hugging Face](https://huggingface.co/) for [Transformers.js](https://github.com/huggingface/transformers.js)
+- Model creators:
+  - [Qwen](https://github.com/QwenLM/Qwen2.5) by Alibaba
+  - [Llama](https://llama.meta.com/) by Meta
+  - [SmolLM](https://huggingface.co/HuggingFaceTB/SmolLM2-360M-Instruct) by Hugging Face
+  - [TinyLlama](https://github.com/jzhang38/TinyLlama) by Zhang et al.
+
+## 🔗 Useful Links
+
+- [WebLLM Documentation](https://github.com/mlc-ai/web-llm#readme)
+- [WebLLM Model List](https://github.com/mlc-ai/web-llm/blob/main/src/config.ts)
+- [MLC LLM](https://llm.mlc.ai/) - Compile your own models for WebLLM
+- [WebGPU Specification](https://www.w3.org/TR/webgpu/)
+- [Transformers.js Documentation](https://huggingface.co/docs/transformers.js)
 
 ---
 
-Made with ❤️ using WebLLM, Transformers.js, and WebGPU
+Made with ❤️ using [WebLLM](https://github.com/mlc-ai/web-llm), [Transformers.js](https://github.com/huggingface/transformers.js), and WebGPU
